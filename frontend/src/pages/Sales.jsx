@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 
-const PRODUCTS_API_URL = "http://localhost:5000/api/products";
-const SALES_API_URL = "http://localhost:5000/api/sales";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+const PRODUCTS_API_URL = `${API_BASE_URL}/products`;
+const SALES_API_URL = `${API_BASE_URL}/sales`;
 
 const getAuthHeaders = () => ({
   "Content-Type": "application/json",

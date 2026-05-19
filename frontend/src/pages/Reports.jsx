@@ -1,6 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 
-const API_URL = "http://localhost:5000/api/reports";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+const REPORTS_URL = `${API_BASE_URL}/reports`;
+
 const getHeaders = () => ({ Authorization: `Bearer ${sessionStorage.getItem("token")}` });
 const formatMoney = (v) => `KES ${Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 const formatNum = (v) => Number(v || 0).toLocaleString();
@@ -130,7 +134,7 @@ export default function Reports() {
   const fetchReports = useCallback(async (from, to) => {
     setLoading(true); setError("");
     try {
-      const res = await fetch(`${API_URL}?from=${from}&to=${to}`, { headers: getHeaders() });
+      const res = await fetch(`${REPORTS_URL}?from=${from}&to=${to}`, { headers: getHeaders() });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "Failed");
       setData(d);
@@ -142,7 +146,7 @@ export default function Reports() {
     let isActive = true;
     const { from, to } = getQuickRange(quickFilter);
 
-    fetch(`${API_URL}?from=${from}&to=${to}`, { headers: getHeaders() })
+    fetch(`${REPORTS_URL}?from=${from}&to=${to}`, { headers: getHeaders() })
       .then((res) =>
         res.json().then((d) => {
           if (!res.ok) {

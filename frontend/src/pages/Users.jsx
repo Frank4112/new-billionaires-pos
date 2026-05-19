@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { FaTrash, FaEdit, FaUserPlus } from "react-icons/fa";
 
-const API_URL = "http://localhost:5000/api/users";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+const USERS_API_URL = `${API_BASE_URL}/users`;
 
 const getAuthHeaders = () => ({
   "Content-Type": "application/json",
@@ -38,7 +40,7 @@ export default function Users({ currentUser }) {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(API_URL, { headers: getAuthHeaders() });
+      const res = await fetch(USERS_API_URL, { headers: getAuthHeaders() });
       const data = await res.json();
       setUsers(data);
     } catch {
@@ -51,7 +53,7 @@ export default function Users({ currentUser }) {
   useEffect(() => {
     let isActive = true;
 
-    fetch(API_URL, { headers: getAuthHeaders() })
+    fetch(USERS_API_URL, { headers: getAuthHeaders() })
       .then((res) => res.json())
       .then((data) => {
         if (isActive) {
@@ -97,7 +99,7 @@ export default function Users({ currentUser }) {
     }
 
     try {
-      const url = editingId ? `${API_URL}/${editingId}` : API_URL;
+      const url = editingId ? `${USERS_API_URL}/${editingId}` : USERS_API_URL;
       const method = editingId ? "PUT" : "POST";
       const body = editingId
         ? { name, email, role, ...(password && { password }) }
@@ -133,7 +135,7 @@ export default function Users({ currentUser }) {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      const res = await fetch(`${API_URL}/${id}`, {
+      const res = await fetch(`${USERS_API_URL}/${id}`, {
         method: "DELETE",
         headers: getAuthHeaders(),
       });

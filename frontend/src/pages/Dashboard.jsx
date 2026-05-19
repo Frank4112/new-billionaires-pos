@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCashRegister, FaBox, FaChartBar, FaReceipt } from "react-icons/fa";
+import { FaCashRegister, FaBox, FaChartBar, FaReceipt, FaRadiation, FaRadiationAlt, FaRainbow, FaCloudSunRain, FaRandom, FaRedditAlien, FaHistory } from "react-icons/fa";
 
-const REPORTS_URL = "http://localhost:5000/api/reports";
-const SALES_URL = "http://localhost:5000/api/sales";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+const REPORTS_URL = `${API_BASE_URL}/reports`;
+const SALES_URL = `${API_BASE_URL}/sales`;
 
 const getHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("token")}`,
@@ -240,7 +242,7 @@ export default function Dashboard() {
           <QuickAction label="New Sale" icon={<FaCashRegister />} onClick={() => navigate("/sales")} />
           <QuickAction label="View Reports" icon={<FaChartBar />} onClick={() => navigate("/reports")} />
           <QuickAction label="Manage Products" icon={<FaBox />} onClick={() => navigate("/products")} />
-          <QuickAction label="Sales History" icon={<FaChartBar />} onClick={() => navigate("/sales-history")} />
+          <QuickAction label="Sales History" icon={<FaHistory />} onClick={() => navigate("/sales-history")} />
         </div>
       </div>
 

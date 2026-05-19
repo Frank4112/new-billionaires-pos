@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { FaTrash, FaEdit } from "react-icons/fa";
 
-const API_URL = "http://localhost:5000/api/products";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+const PRODUCTS_API_URL = `${API_BASE_URL}/products`;
 
 const getHeaders = () => ({
   "Content-Type": "application/json",
@@ -28,7 +30,7 @@ function Products() {
     try {
       setErrorMessage("");
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(PRODUCTS_API_URL, {
         headers: getHeaders(),
       });
 
@@ -50,7 +52,7 @@ function Products() {
   useEffect(() => {
     let isActive = true;
 
-    fetch(API_URL, {
+    fetch(PRODUCTS_API_URL, {
       headers: getHeaders(),
     })
       .then((response) => {
@@ -93,7 +95,7 @@ function Products() {
     try {
       setErrorMessage("");
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(PRODUCTS_API_URL, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({
@@ -132,7 +134,7 @@ function Products() {
     try {
       setErrorMessage("");
 
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await fetch(`${PRODUCTS_API_URL}/${id}`, {
         method: "DELETE",
         headers: getHeaders(),
       });
@@ -154,7 +156,7 @@ function Products() {
     try {
       setErrorMessage("");
 
-      const response = await fetch(`${API_URL}/${editingId}`, {
+      const response = await fetch(`${PRODUCTS_API_URL}/${editingId}`, {
         method: "PUT",
         headers: getHeaders(),
         body: JSON.stringify({

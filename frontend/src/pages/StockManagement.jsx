@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { FaPlus, FaBoxOpen, FaSearch } from "react-icons/fa";
 
-const STOCK_URL = "http://localhost:5000/api/stock";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+const STOCK_URL = `${API_BASE_URL}/stock`;
 
 const getAuthHeaders = () => ({
   "Content-Type": "application/json",
