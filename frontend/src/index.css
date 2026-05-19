@@ -1,0 +1,214 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: #eef1f5;
+  font-family: Arial, sans-serif;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+button,
+input,
+select {
+  max-width: 100%;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f3ee;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9a84c;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1a1a2e;
+}
+/* Hide scrollbar but keep scrolling working */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Responsive layout utilities */
+.app-main {
+  min-width: 0;
+}
+
+.app-content {
+  min-width: 0;
+}
+
+.page-shell {
+  min-width: 0;
+}
+
+.responsive-table-card {
+  min-width: 0;
+  overflow-x: auto !important;
+}
+
+.responsive-table {
+  min-width: 680px;
+}
+
+.responsive-toolbar,
+.page-header-row,
+.responsive-filter-panel {
+  min-width: 0;
+}
+
+.panel-card {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .responsive-two-column,
+  .sales-history-grid,
+  .reports-page [style*="grid-template-columns: 1fr 1fr"],
+  .reports-page [style*="grid-template-columns: repeat(4"],
+  .reports-page [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .receipt-panel {
+    position: static !important;
+  }
+}
+
+@media (max-width: 900px) {
+  html,
+  body,
+  #root {
+    overflow: auto;
+  }
+
+  .app-shell {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh;
+    overflow: visible !important;
+  }
+
+  .app-main {
+    overflow: visible !important;
+  }
+
+  .app-content {
+    overflow: visible !important;
+    padding: 18px !important;
+  }
+
+  .app-header {
+    height: auto !important;
+    min-height: 68px;
+    padding: 14px 18px !important;
+    gap: 14px;
+    align-items: flex-start !important;
+  }
+
+  .app-header-actions {
+    margin-left: auto;
+  }
+
+  .page-header-row,
+  .responsive-toolbar,
+  .responsive-filter-panel {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .responsive-toolbar input,
+  .responsive-filter-panel input,
+  .responsive-filter-panel button,
+  .products-page input,
+  .stock-page input {
+    width: 100% !important;
+  }
+
+  .responsive-form-grid,
+  .stock-existing-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pos-product-row {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .pos-product-row > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .app-header-brand {
+    display: none !important;
+  }
+
+  .login-page {
+    grid-template-columns: 1fr !important;
+  }
+
+  .login-brand-panel {
+    min-height: 260px;
+    padding: 32px 20px !important;
+  }
+
+  .login-form-panel {
+    padding: 32px 20px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-content {
+    padding: 14px !important;
+  }
+
+  .app-header-copy p {
+    display: none;
+  }
+
+  .app-header-actions {
+    gap: 8px !important;
+  }
+
+  .page-shell h1 {
+    font-size: 24px !important;
+  }
+
+  .responsive-table {
+    min-width: 620px;
+  }
+
+  .panel-card,
+  .responsive-table-card,
+  .receipt-panel {
+    border-radius: 8px !important;
+  }
+
+  .reports-page [style*="padding: 24px"],
+  .panel-card {
+    padding: 16px !important;
+  }
+}
