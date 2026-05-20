@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
@@ -102,6 +103,7 @@ function App() {
         </div>
       </div>
       <Analytics />
+      <SpeedInsights />
     </BrowserRouter>
   );
 }
