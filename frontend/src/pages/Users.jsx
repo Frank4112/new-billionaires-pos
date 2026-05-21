@@ -227,7 +227,20 @@ export default function Users({ currentUser }) {
             </tr>
           </thead>
           <tbody>
-            {!isLoading && users.map((user, index) => (
+            {!isLoading &&
+  users
+    .filter((user) => {
+      // Hide sudo_admin from normal admins
+      if (
+        currentUser.role !== "sudo_admin" &&
+        user.role === "sudo_admin"
+      ) {
+        return false;
+      }
+
+      return true;
+    })
+    .map((user, index) => (
               <tr
                 key={user.id}
                 style={{
@@ -256,12 +269,29 @@ export default function Users({ currentUser }) {
                     <button onClick={() => handleEdit(user)} style={iconButtonStyle} title="Edit user">
                       <FaEdit />
                     </button>
-                    {/* Only sudo_admin can delete, and can't delete themselves */}
-                    {currentUser.role === "sudo_admin" && user.id !== currentUser.id && (
-                      <button onClick={() => handleDelete(user.id)} style={dangerButtonStyle} title="Delete user">
-                        <FaTrash />
-                      </button>
-                    )}
+                    {/* Sudo admin can delete everyone except themselves */}
+{currentUser.role === "sudo_admin" &&
+  user.id !== currentUser.id && (
+    <button
+      onClick={() => handleDelete(user.id)}
+      style={dangerButtonStyle}
+      title="Delete user"
+    >
+      <FaTrash />
+    </button>
+)}
+
+{/* Admin can only delete cashiers */}
+{currentUser.role === "admin" &&
+  user.role === "cashier" && (
+    <button
+      onClick={() => handleDelete(user.id)}
+      style={dangerButtonStyle}
+      title="Delete user"
+    >
+      <FaTrash />
+    </button>
+)}
                   </div>
                 </td>
               </tr>
