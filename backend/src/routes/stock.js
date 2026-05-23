@@ -4,9 +4,7 @@ import db from "../config/db.js";
 
 const router = express.Router();
 
-// ==========================================
 // GET ALL PRODUCTS WITH STOCK INFO
-// ==========================================
 router.get("/products", async (req, res) => {
   try {
     const [products] = await db.query(`
@@ -21,9 +19,7 @@ router.get("/products", async (req, res) => {
   }
 });
 
-// ==========================================
 // GET STOCK IN HISTORY
-// ==========================================
 router.get("/history", async (req, res) => {
   try {
     const { from, to } = req.query;
@@ -52,9 +48,7 @@ router.get("/history", async (req, res) => {
   }
 });
 
-// ==========================================
 // RECORD STOCK IN (existing product)
-// ==========================================
 router.post("/in", async (req, res) => {
   const { productId, quantity, costPrice } = req.body;
 
@@ -68,17 +62,14 @@ router.post("/in", async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-
     await connection.query(
       "UPDATE products SET stock_quantity = stock_quantity + ?, cost_price = ? WHERE id = ?",
       [quantity, costPrice, productId]
     );
-
     await connection.query(
       "INSERT INTO stock_movements (product_id, type, quantity, cost_price) VALUES (?, 'IN', ?, ?)",
       [productId, quantity, costPrice]
     );
-
     await connection.commit();
     res.status(201).json({ message: "Stock recorded successfully." });
   } catch (err) {
@@ -89,9 +80,7 @@ router.post("/in", async (req, res) => {
   }
 });
 
-// ==========================================
 // CREATE NEW PRODUCT + RECORD STOCK IN
-// ==========================================
 router.post("/new-product", async (req, res) => {
   const { name, category, sellingPrice, costPrice, quantity, minimumStock } = req.body;
 
@@ -103,7 +92,6 @@ router.post("/new-product", async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    // Check if product name already exists
     const [existing] = await connection.query(
       "SELECT id FROM products WHERE name = ?", [name]
     );
@@ -112,7 +100,6 @@ router.post("/new-product", async (req, res) => {
       return res.status(400).json({ error: "A product with this name already exists." });
     }
 
-    // Create the product with initial stock
     const [result] = await connection.query(
       `INSERT INTO products (name, category, selling_price, cost_price, stock_quantity, minimum_stock, is_active)
        VALUES (?, ?, ?, ?, ?, ?, 1)`,
@@ -121,7 +108,6 @@ router.post("/new-product", async (req, res) => {
 
     const productId = result.insertId;
 
-    // Record stock movement
     await connection.query(
       "INSERT INTO stock_movements (product_id, type, quantity, cost_price) VALUES (?, 'IN', ?, ?)",
       [productId, quantity, costPrice || 0]
@@ -134,6 +120,41 @@ router.post("/new-product", async (req, res) => {
     res.status(500).json({ error: "Failed to create product." });
   } finally {
     connection.release();
+  }
+});
+
+// ==========================================
+// EDIT PRODUCT (name, category, selling price, cost price, min stock)
+// ==========================================
+router.put("/products/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, category, sellingPrice, costPrice, minimumStock } = req.body;
+
+  if (!name || !sellingPrice) {
+    return res.status(400).json({ error: "Name and selling price are required." });
+  }
+
+  try {
+    await db.query(
+      `UPDATE products SET name = ?, category = ?, selling_price = ?, cost_price = ?, minimum_stock = ? WHERE id = ?`,
+      [name, category || null, sellingPrice, costPrice || 0, minimumStock || 5, id]
+    );
+    res.json({ message: "Product updated successfully." });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update product." });
+  }
+});
+
+// ==========================================
+// DEACTIVATE PRODUCT (soft delete — keeps history)
+// ==========================================
+router.delete("/products/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query("UPDATE products SET is_active = 0 WHERE id = ?", [id]);
+    res.json({ message: "Product deactivated successfully." });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to deactivate product." });
   }
 });
 

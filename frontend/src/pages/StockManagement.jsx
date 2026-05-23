@@ -1,8 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import { FaPlus, FaBoxOpen, FaSearch } from "react-icons/fa";
+import { FaPlus, FaBoxOpen, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-
 const STOCK_URL = `${API_BASE_URL}/stock`;
 
 const getAuthHeaders = () => ({
@@ -21,13 +20,13 @@ const thStyle = {
 const tdStyle = { padding: "12px 14px", fontSize: "14px", borderBottom: "1px solid #e8e5de", color: "#2d2d2d" };
 const labelStyle = { display: "block", fontSize: "13px", fontWeight: "600", color: "#1a1a2e", marginBottom: "6px" };
 const inputStyle = { width: "100%", padding: "10px 12px", border: "1px solid #d0cdc6", borderRadius: "8px", fontSize: "14px", outline: "none", background: "#faf9f6", boxSizing: "border-box" };
+const iconBtnStyle = { border: "none", borderRadius: "6px", cursor: "pointer", width: "32px", height: "30px", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" };
 
 // ── SEARCHABLE PRODUCT DROPDOWN ──────────────────────────────
 function ProductSearch({ products, value, onChange }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-
   const selected = products.find((p) => p.id === value);
 
   useEffect(() => {
@@ -43,48 +42,31 @@ function ProductSearch({ products, value, onChange }) {
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
-      <div
-        onClick={() => { setOpen(!open); setQuery(""); }}
-        style={{ ...inputStyle, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-      >
+      <div onClick={() => { setOpen(!open); setQuery(""); }}
+        style={{ ...inputStyle, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ color: selected ? "#1a1a2e" : "#9ca3af" }}>
           {selected ? `${selected.name} ${selected.category ? `(${selected.category})` : ""}` : "Search or select a product..."}
         </span>
         <FaSearch style={{ color: "#9ca3af", fontSize: "12px" }} />
       </div>
-
       {open && (
         <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #d0cdc6", borderRadius: "8px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100, maxHeight: "260px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <div style={{ padding: "8px" }}>
-            <input
-              autoFocus
-              type="text"
-              placeholder="Type to search..."
-              value={query}
+            <input autoFocus type="text" placeholder="Type to search..." value={query}
               onChange={(e) => setQuery(e.target.value)}
-              style={{ ...inputStyle, padding: "8px 12px", fontSize: "13px" }}
-            />
+              style={{ ...inputStyle, padding: "8px 12px", fontSize: "13px" }} />
           </div>
           <div style={{ overflowY: "auto", maxHeight: "200px" }}>
             {filtered.length === 0 ? (
               <div style={{ padding: "12px 14px", color: "#888", fontSize: "13px" }}>No products found</div>
             ) : filtered.map((p) => (
-              <div
-                key={p.id}
-                onClick={() => { onChange(p.id); setOpen(false); setQuery(""); }}
-                style={{
-                  padding: "10px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between",
-                  background: value === p.id ? "#f5f3ee" : "transparent",
-                  borderLeft: value === p.id ? "3px solid #c9a84c" : "3px solid transparent",
-                }}
+              <div key={p.id} onClick={() => { onChange(p.id); setOpen(false); setQuery(""); }}
+                style={{ padding: "10px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", background: value === p.id ? "#f5f3ee" : "transparent", borderLeft: value === p.id ? "3px solid #c9a84c" : "3px solid transparent" }}
                 onMouseEnter={(e) => e.currentTarget.style.background = "#faf9f6"}
-                onMouseLeave={(e) => e.currentTarget.style.background = value === p.id ? "#f5f3ee" : "transparent"}
-              >
+                onMouseLeave={(e) => e.currentTarget.style.background = value === p.id ? "#f5f3ee" : "transparent"}>
                 <div>
                   <p style={{ margin: 0, fontWeight: "600", fontSize: "14px", color: "#1a1a2e" }}>{p.name}</p>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#6b6b6b" }}>
-                    {p.category || "Uncategorized"} · Stock: {p.stock_quantity}
-                  </p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#6b6b6b" }}>{p.category || "Uncategorized"} · Stock: {p.stock_quantity}</p>
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#1a1a2e" }}>{formatMoney(p.selling_price)}</p>
@@ -110,7 +92,7 @@ export default function StockManagement() {
   const [errorMessage, setErrorMessage] = useState("");
   const [stockSearch, setStockSearch] = useState("");
 
-  // Existing product form
+  // Stock in form
   const [productId, setProductId] = useState(null);
   const [quantity, setQuantity] = useState("");
   const [costPrice, setCostPrice] = useState("");
@@ -122,6 +104,14 @@ export default function StockManagement() {
   const [newCostPrice, setNewCostPrice] = useState("");
   const [newQuantity, setNewQuantity] = useState("");
   const [newMinStock, setNewMinStock] = useState("5");
+
+  // Edit product state
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editSellingPrice, setEditSellingPrice] = useState("");
+  const [editCostPrice, setEditCostPrice] = useState("");
+  const [editMinStock, setEditMinStock] = useState("");
 
   const now = new Date();
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
@@ -150,43 +140,26 @@ export default function StockManagement() {
 
   useEffect(() => {
     let isActive = true;
-
     const loadInitialStockData = async () => {
       try {
         const [productsRes, historyRes] = await Promise.all([
           fetch(`${STOCK_URL}/products`, { headers: getAuthHeaders() }),
-          fetch(`${STOCK_URL}/history?from=${monthStart}&to=${today}`, {
-            headers: getAuthHeaders(),
-          }),
+          fetch(`${STOCK_URL}/history?from=${monthStart}&to=${today}`, { headers: getAuthHeaders() }),
         ]);
-
-        const [productsData, historyData] = await Promise.all([
-          productsRes.json(),
-          historyRes.json(),
-        ]);
-
+        const [productsData, historyData] = await Promise.all([productsRes.json(), historyRes.json()]);
         if (isActive) {
           setProducts(Array.isArray(productsData) ? productsData : []);
           setHistory(Array.isArray(historyData) ? historyData : []);
         }
       } catch {
-        if (isActive) {
-          setErrorMessage("Failed to load stock data.");
-        }
+        if (isActive) setErrorMessage("Failed to load stock data.");
       } finally {
-        if (isActive) {
-          setLoading(false);
-          setHistoryLoading(false);
-        }
+        if (isActive) { setLoading(false); setHistoryLoading(false); }
       }
     };
-
     loadInitialStockData();
-
-    return () => {
-      isActive = false;
-    };
-  }, [monthStart, today]);
+    return () => { isActive = false; };
+  }, []);
 
   useEffect(() => {
     if (!successMessage) return;
@@ -251,27 +224,70 @@ export default function StockManagement() {
     } catch (err) { setErrorMessage(err.message); }
   };
 
+  // ── EDIT HANDLERS ──
+  const startEdit = (p) => {
+    setEditingProduct(p);
+    setEditName(p.name);
+    setEditCategory(p.category || "");
+    setEditSellingPrice(p.selling_price);
+    setEditCostPrice(p.cost_price || "");
+    setEditMinStock(p.minimum_stock);
+  };
+
+  const handleEdit = async () => {
+    if (!editName || !editSellingPrice) {
+      setErrorMessage("Name and selling price are required."); return;
+    }
+    try {
+      const res = await fetch(`${STOCK_URL}/products/${editingProduct.id}`, {
+        method: "PUT", headers: getAuthHeaders(),
+        body: JSON.stringify({
+          name: editName, category: editCategory,
+          sellingPrice: Number(editSellingPrice),
+          costPrice: Number(editCostPrice || 0),
+          minimumStock: Number(editMinStock || 5),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSuccessMessage("Product updated successfully!");
+      setEditingProduct(null);
+      await fetchProducts();
+    } catch (err) { setErrorMessage(err.message); }
+  };
+
+  // ── DELETE HANDLER ──
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Deactivate "${name}"? It will no longer appear in POS or stock.`)) return;
+    try {
+      const res = await fetch(`${STOCK_URL}/products/${id}`, {
+        method: "DELETE", headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSuccessMessage(`"${name}" deactivated successfully.`);
+      await fetchProducts();
+    } catch (err) { setErrorMessage(err.message); }
+  };
+
   const selectedProduct = products.find((p) => p.id === productId);
   const totalCostThisPeriod = history.reduce((s, h) => s + Number(h.totalCost || 0), 0);
-
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(stockSearch.toLowerCase()) ||
     (p.category || "").toLowerCase().includes(stockSearch.toLowerCase())
   );
 
   return (
-    <div className="page-shell stock-page" style={{ fontFamily: "'Segoe UI', sans-serif", color: "#1a1a2e" }}>
+    <div style={{ fontFamily: "'Segoe UI', sans-serif", color: "#1a1a2e" }}>
 
       {/* HEADER */}
-      <div className="page-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <div>
           <h1 style={{ fontSize: "30px", fontWeight: "700", margin: "0 0 4px" }}>Stock Management</h1>
           <p style={{ color: "#6b7280", fontSize: "15px", margin: 0 }}>Record stock purchases and track inventory costs.</p>
         </div>
-        <button
-          onClick={() => { setShowForm(!showForm); resetForm(); setIsNewProduct(false); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "11px 18px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "14px" }}
-        >
+        <button onClick={() => { setShowForm(!showForm); resetForm(); setIsNewProduct(false); setEditingProduct(null); }}
+          style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "11px 18px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "14px" }}>
           <FaPlus /> {showForm ? "Cancel" : "Record Stock In"}
         </button>
       </div>
@@ -279,48 +295,66 @@ export default function StockManagement() {
       {errorMessage && <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: "8px", padding: "12px 14px", marginBottom: "16px" }}>{errorMessage}</div>}
       {successMessage && <div style={{ background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#166534", borderRadius: "8px", padding: "12px 14px", marginBottom: "16px" }}>{successMessage}</div>}
 
-      {/* FORM */}
-      {showForm && (
-        <div className="panel-card" style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "12px", padding: "24px", marginBottom: "24px" }}>
+      {/* EDIT FORM */}
+      {editingProduct && (
+        <div style={{ background: "#fff", border: "1px solid #c9a84c", borderRadius: "12px", padding: "24px", marginBottom: "24px" }}>
+          <h3 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: "700" }}>✏️ Edit Product — {editingProduct.name}</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+            <div>
+              <label style={labelStyle}>Product Name *</label>
+              <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Category</label>
+              <input type="text" value={editCategory} onChange={(e) => setEditCategory(e.target.value)} placeholder="e.g. Beer, Food" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Min Stock Level</label>
+              <input type="number" min="0" value={editMinStock} onChange={(e) => setEditMinStock(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Selling Price (KES) *</label>
+              <input type="number" min="0" step="0.01" value={editSellingPrice} onChange={(e) => setEditSellingPrice(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Cost Price per Unit (KES)</label>
+              <input type="number" min="0" step="0.01" value={editCostPrice} onChange={(e) => setEditCostPrice(e.target.value)} style={inputStyle} />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button onClick={handleEdit} style={{ padding: "10px 20px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>
+              Save Changes
+            </button>
+            <button onClick={() => setEditingProduct(null)} style={{ padding: "10px 20px", background: "#eef1f5", color: "#1a1a2e", border: "1px solid #d0cdc6", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
-          {/* Toggle existing / new */}
+      {/* STOCK IN FORM */}
+      {showForm && (
+        <div style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "12px", padding: "24px", marginBottom: "24px" }}>
           <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
             {["existing", "new"].map((type) => (
-              <button
-                key={type}
-                onClick={() => { setIsNewProduct(type === "new"); resetForm(); }}
-                style={{
-                  padding: "8px 18px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer",
+              <button key={type} onClick={() => { setIsNewProduct(type === "new"); resetForm(); }}
+                style={{ padding: "8px 18px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer",
                   background: (type === "new") === isNewProduct ? "#1a1a2e" : "#fff",
                   color: (type === "new") === isNewProduct ? "#c9a84c" : "#4a4a4a",
-                  border: (type === "new") === isNewProduct ? "1px solid #1a1a2e" : "1px solid #d0cdc6",
-                }}
-              >
+                  border: (type === "new") === isNewProduct ? "1px solid #1a1a2e" : "1px solid #d0cdc6" }}>
                 {type === "existing" ? "📦 Existing Product" : "✨ New Product"}
               </button>
             ))}
           </div>
 
-          {/* EXISTING PRODUCT FORM */}
           {!isNewProduct && (
             <>
               <h3 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: "700" }}>Stock In — Existing Product</h3>
-              <div className="responsive-form-grid stock-existing-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-                <div>
-                  <label style={labelStyle}>Product</label>
-                  <ProductSearch products={products} value={productId} onChange={handleProductSelect} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Quantity Received</label>
-                  <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 24" style={inputStyle} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Cost Price per Unit (KES)</label>
-                  <input type="number" min="0" step="0.01" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} placeholder="e.g. 150" style={inputStyle} />
-                </div>
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                <div><label style={labelStyle}>Product</label><ProductSearch products={products} value={productId} onChange={handleProductSelect} /></div>
+                <div><label style={labelStyle}>Quantity Received</label><input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 24" style={inputStyle} /></div>
+                <div><label style={labelStyle}>Cost Price per Unit (KES)</label><input type="number" min="0" step="0.01" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} placeholder="e.g. 150" style={inputStyle} /></div>
               </div>
-
-              {/* Preview */}
               {selectedProduct && quantity && costPrice !== "" && (
                 <div style={{ background: "#f5f3ee", border: "1px solid #e0ddd5", borderRadius: "8px", padding: "14px 18px", marginBottom: "16px", display: "flex", gap: "28px", flexWrap: "wrap" }}>
                   {[
@@ -338,50 +372,24 @@ export default function StockManagement() {
                   ))}
                 </div>
               )}
-
               <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={handleStockIn} style={{ padding: "10px 20px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>
-                  Confirm Stock In
-                </button>
-                <button onClick={() => { setShowForm(false); resetForm(); }} style={{ padding: "10px 20px", background: "#eef1f5", color: "#1a1a2e", border: "1px solid #d0cdc6", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>
-                  Cancel
-                </button>
+                <button onClick={handleStockIn} style={{ padding: "10px 20px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>Confirm Stock In</button>
+                <button onClick={() => { setShowForm(false); resetForm(); }} style={{ padding: "10px 20px", background: "#eef1f5", color: "#1a1a2e", border: "1px solid #d0cdc6", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>Cancel</button>
               </div>
             </>
           )}
 
-          {/* NEW PRODUCT FORM */}
           {isNewProduct && (
             <>
               <h3 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: "700" }}>Add New Product + Initial Stock</h3>
-              <div className="responsive-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-                <div>
-                  <label style={labelStyle}>Product Name *</label>
-                  <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Heineken" style={inputStyle} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Category</label>
-                  <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Beer, Spirits, Food" style={inputStyle} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Minimum Stock Level</label>
-                  <input type="number" min="0" value={newMinStock} onChange={(e) => setNewMinStock(e.target.value)} placeholder="5" style={inputStyle} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Selling Price (KES) *</label>
-                  <input type="number" min="0" step="0.01" value={newSellingPrice} onChange={(e) => setNewSellingPrice(e.target.value)} placeholder="e.g. 300" style={inputStyle} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Cost Price per Unit (KES)</label>
-                  <input type="number" min="0" step="0.01" value={newCostPrice} onChange={(e) => setNewCostPrice(e.target.value)} placeholder="e.g. 180" style={inputStyle} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Initial Stock Quantity *</label>
-                  <input type="number" min="1" value={newQuantity} onChange={(e) => setNewQuantity(e.target.value)} placeholder="e.g. 50" style={inputStyle} />
-                </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                <div><label style={labelStyle}>Product Name *</label><input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Heineken" style={inputStyle} /></div>
+                <div><label style={labelStyle}>Category</label><input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Beer, Spirits, Food" style={inputStyle} /></div>
+                <div><label style={labelStyle}>Minimum Stock Level</label><input type="number" min="0" value={newMinStock} onChange={(e) => setNewMinStock(e.target.value)} placeholder="5" style={inputStyle} /></div>
+                <div><label style={labelStyle}>Selling Price (KES) *</label><input type="number" min="0" step="0.01" value={newSellingPrice} onChange={(e) => setNewSellingPrice(e.target.value)} placeholder="e.g. 300" style={inputStyle} /></div>
+                <div><label style={labelStyle}>Cost Price per Unit (KES)</label><input type="number" min="0" step="0.01" value={newCostPrice} onChange={(e) => setNewCostPrice(e.target.value)} placeholder="e.g. 180" style={inputStyle} /></div>
+                <div><label style={labelStyle}>Initial Stock Quantity *</label><input type="number" min="1" value={newQuantity} onChange={(e) => setNewQuantity(e.target.value)} placeholder="e.g. 50" style={inputStyle} /></div>
               </div>
-
-              {/* Preview */}
               {newName && newSellingPrice && newCostPrice && newQuantity && (
                 <div style={{ background: "#f5f3ee", border: "1px solid #e0ddd5", borderRadius: "8px", padding: "14px 18px", marginBottom: "16px", display: "flex", gap: "28px", flexWrap: "wrap" }}>
                   {[
@@ -399,14 +407,9 @@ export default function StockManagement() {
                   ))}
                 </div>
               )}
-
               <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={handleNewProduct} style={{ padding: "10px 20px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>
-                  Create Product & Record Stock
-                </button>
-                <button onClick={() => { setShowForm(false); resetForm(); setIsNewProduct(false); }} style={{ padding: "10px 20px", background: "#eef1f5", color: "#1a1a2e", border: "1px solid #d0cdc6", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>
-                  Cancel
-                </button>
+                <button onClick={handleNewProduct} style={{ padding: "10px 20px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>Create Product & Record Stock</button>
+                <button onClick={() => { setShowForm(false); resetForm(); setIsNewProduct(false); }} style={{ padding: "10px 20px", background: "#eef1f5", color: "#1a1a2e", border: "1px solid #d0cdc6", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>Cancel</button>
               </div>
             </>
           )}
@@ -414,7 +417,7 @@ export default function StockManagement() {
       )}
 
       {/* CURRENT STOCK LEVELS */}
-      <div className="responsive-table-card" style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "12px", overflow: "hidden", marginBottom: "24px" }}>
+      <div style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "12px", overflow: "hidden", marginBottom: "24px" }}>
         <div style={{ padding: "14px 20px", borderBottom: "2px solid #e0ddd5", background: "#f5f3ee", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <FaBoxOpen style={{ color: "#c9a84c" }} />
@@ -422,14 +425,11 @@ export default function StockManagement() {
           </div>
           <div style={{ position: "relative" }}>
             <FaSearch style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "#9ca3af", fontSize: "12px" }} />
-            <input
-              type="text" placeholder="Search products..."
-              value={stockSearch} onChange={(e) => setStockSearch(e.target.value)}
-              style={{ padding: "7px 12px 7px 30px", border: "1px solid #d0cdc6", borderRadius: "7px", fontSize: "13px", outline: "none", width: "200px" }}
-            />
+            <input type="text" placeholder="Search products..." value={stockSearch} onChange={(e) => setStockSearch(e.target.value)}
+              style={{ padding: "7px 12px 7px 30px", border: "1px solid #d0cdc6", borderRadius: "7px", fontSize: "13px", outline: "none", width: "200px" }} />
           </div>
         </div>
-        <table className="responsive-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={thStyle}>Product</th>
@@ -440,13 +440,14 @@ export default function StockManagement() {
               <th style={thStyle}>Selling Price</th>
               <th style={thStyle}>Margin</th>
               <th style={thStyle}>Status</th>
+              <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} style={{ ...tdStyle, textAlign: "center", color: "#888" }}>Loading...</td></tr>
+              <tr><td colSpan={9} style={{ ...tdStyle, textAlign: "center", color: "#888" }}>Loading...</td></tr>
             ) : filteredProducts.length === 0 ? (
-              <tr><td colSpan={8} style={{ ...tdStyle, textAlign: "center", color: "#888" }}>No products found</td></tr>
+              <tr><td colSpan={9} style={{ ...tdStyle, textAlign: "center", color: "#888" }}>No products found</td></tr>
             ) : filteredProducts.map((p) => {
               const margin = Number(p.selling_price) - Number(p.cost_price);
               const marginPct = Number(p.selling_price) > 0 ? ((margin / Number(p.selling_price)) * 100).toFixed(0) : 0;
@@ -456,8 +457,7 @@ export default function StockManagement() {
                 <tr key={p.id}
                   onMouseEnter={(e) => e.currentTarget.style.background = "#faf9f6"}
                   onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                  style={{ transition: "background 0.15s" }}
-                >
+                  style={{ transition: "background 0.15s" }}>
                   <td style={{ ...tdStyle, fontWeight: "600" }}>{p.name}</td>
                   <td style={tdStyle}>
                     <span style={{ background: "#f0ede6", color: "#6b6b6b", padding: "2px 8px", borderRadius: "20px", fontSize: "12px" }}>
@@ -481,6 +481,18 @@ export default function StockManagement() {
                       {isOut ? "Out of Stock" : isLow ? "Low Stock" : "In Stock"}
                     </span>
                   </td>
+                  <td style={tdStyle}>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <button onClick={() => { startEdit(p); setShowForm(false); }}
+                        style={{ ...iconBtnStyle, background: "#1a1a2e", color: "#c9a84c" }} title="Edit product">
+                        <FaEdit size={12} />
+                      </button>
+                      <button onClick={() => handleDelete(p.id, p.name)}
+                        style={{ ...iconBtnStyle, background: "#fef2f2", color: "#dc2626" }} title="Deactivate product">
+                        <FaTrash size={12} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               );
             })}
@@ -489,33 +501,25 @@ export default function StockManagement() {
       </div>
 
       {/* STOCK IN HISTORY */}
-      <div className="responsive-table-card" style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "12px", overflow: "hidden" }}>
         <div style={{ padding: "14px 20px", borderBottom: "2px solid #e0ddd5", background: "#f5f3ee", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
           <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700" }}>Stock In History</h3>
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #d0cdc6", borderRadius: "7px", fontSize: "13px", outline: "none" }} />
             <span style={{ color: "#888", fontSize: "13px" }}>to</span>
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #d0cdc6", borderRadius: "7px", fontSize: "13px", outline: "none" }} />
-            <button onClick={fetchHistory} style={{ padding: "7px 14px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "7px", cursor: "pointer", fontWeight: "600", fontSize: "13px" }}>
-              Filter
-            </button>
+            <button onClick={fetchHistory} style={{ padding: "7px 14px", background: "#1a1a2e", color: "#c9a84c", border: "none", borderRadius: "7px", cursor: "pointer", fontWeight: "600", fontSize: "13px" }}>Filter</button>
           </div>
         </div>
 
         {!historyLoading && history.length > 0 && (
           <div style={{ padding: "12px 20px", background: "#faf9f6", borderBottom: "1px solid #e0ddd5", display: "flex", gap: "24px" }}>
-            <div>
-              <span style={{ fontSize: "12px", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Spent: </span>
-              <span style={{ fontWeight: "700", color: "#1a1a2e" }}>{formatMoney(totalCostThisPeriod)}</span>
-            </div>
-            <div>
-              <span style={{ fontSize: "12px", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Records: </span>
-              <span style={{ fontWeight: "700", color: "#1a1a2e" }}>{history.length}</span>
-            </div>
+            <div><span style={{ fontSize: "12px", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Spent: </span><span style={{ fontWeight: "700", color: "#1a1a2e" }}>{formatMoney(totalCostThisPeriod)}</span></div>
+            <div><span style={{ fontSize: "12px", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Records: </span><span style={{ fontWeight: "700", color: "#1a1a2e" }}>{history.length}</span></div>
           </div>
         )}
 
-        <table className="responsive-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={thStyle}>Product</th>
@@ -535,14 +539,9 @@ export default function StockManagement() {
               <tr key={i}
                 onMouseEnter={(e) => e.currentTarget.style.background = "#faf9f6"}
                 onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                style={{ transition: "background 0.15s" }}
-              >
+                style={{ transition: "background 0.15s" }}>
                 <td style={{ ...tdStyle, fontWeight: "600" }}>{h.productName}</td>
-                <td style={tdStyle}>
-                  <span style={{ background: "#f0ede6", color: "#6b6b6b", padding: "2px 8px", borderRadius: "20px", fontSize: "12px" }}>
-                    {h.category || "Uncategorized"}
-                  </span>
-                </td>
+                <td style={tdStyle}><span style={{ background: "#f0ede6", color: "#6b6b6b", padding: "2px 8px", borderRadius: "20px", fontSize: "12px" }}>{h.category || "Uncategorized"}</span></td>
                 <td style={{ ...tdStyle, fontWeight: "600", color: "#2e7d32" }}>+{h.quantity}</td>
                 <td style={tdStyle}>{formatMoney(h.costPrice)}</td>
                 <td style={{ ...tdStyle, fontWeight: "600" }}>{formatMoney(h.totalCost)}</td>
