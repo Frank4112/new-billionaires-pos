@@ -4,6 +4,7 @@ import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const PRODUCTS_API_URL = `${API_BASE_URL}/products`;
+const MENU_API_URL = `${API_BASE_URL}/menu`;
 const SALES_API_URL = `${API_BASE_URL}/sales`;
 
 const getAuthHeaders = () => ({
@@ -13,8 +14,10 @@ const getAuthHeaders = () => ({
 
 function Sales({ currentUser }) {
   const [products, setProducts] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("bar");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,9 +25,7 @@ function Sales({ currentUser }) {
   const [successMessage, setSuccessMessage] = useState("");
 
   const refreshProducts = async () => {
-    const response = await fetch(PRODUCTS_API_URL, {
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(PRODUCTS_API_URL, { headers: getAuthHeaders() });
     if (!response.ok) throw new Error("Failed to refresh products");
     const data = await response.json();
     setProducts(data);
@@ -33,12 +34,16 @@ function Sales({ currentUser }) {
   useEffect(() => {
     let isActive = true;
 
-    fetch(PRODUCTS_API_URL, { headers: getAuthHeaders() })
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to load products");
-        return response.json();
+    Promise.all([
+      fetch(PRODUCTS_API_URL, { headers: getAuthHeaders() }).then((r) => r.json()),
+      fetch(MENU_API_URL, { headers: getAuthHeaders() }).then((r) => r.json()),
+    ])
+      .then(([productsData, menuData]) => {
+        if (isActive) {
+          setProducts(Array.isArray(productsData) ? productsData : []);
+          setMenuItems(Array.isArray(menuData) ? menuData : []);
+        }
       })
-      .then((data) => { if (isActive) setProducts(data); })
       .catch((error) => { if (isActive) setErrorMessage(error.message); })
       .finally(() => { if (isActive) setIsLoading(false); });
 
@@ -57,48 +62,76 @@ function Sales({ currentUser }) {
     return () => clearTimeout(timer);
   }, [errorMessage]);
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter based on active tab
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const filteredMenu = menuItems.filter((m) =>
+    m.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const cartTotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity, 0
-  );
-
+  const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const formatMoney = (amount) => `KES ${Number(amount).toFixed(2)}`;
 
-  const addToCart = (product) => {
-    const stock = Number(product.stock);
-    setErrorMessage("");
-    setSuccessMessage("");
+  // Add bar product to cart (stock checked)
+  const addProductToCart = (product) => {
+    const stock = Number(product.stock_quantity ?? product.stock);
+    setErrorMessage(""); setSuccessMessage("");
 
-    if (stock <= 0) {
-      setErrorMessage(`${product.name} is out of stock`);
-      return;
-    }
+    if (stock <= 0) { setErrorMessage(`${product.name} is out of stock`); return; }
 
     setCartItems((currentItems) => {
-      const existingItem = currentItems.find((item) => item.id === product.id);
-      if (existingItem) {
-        if (existingItem.quantity >= stock) {
+      const existing = currentItems.find((item) => item.id === `p-${product.id}`);
+      if (existing) {
+        if (existing.quantity >= stock) {
           setErrorMessage(`Only ${stock} ${product.name} in stock`);
           return currentItems;
         }
         return currentItems.map((item) =>
-          item.id !== product.id ? item : { ...item, quantity: item.quantity + 1 }
+          item.id === `p-${product.id}` ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...currentItems, { id: product.id, name: product.name, price: Number(product.price), stock, quantity: 1 }];
+      return [...currentItems, {
+        id: `p-${product.id}`,
+        productId: product.id,
+        name: product.name,
+        price: Number(product.price ?? product.selling_price),
+        stock,
+        quantity: 1,
+        type: "bar",
+      }];
+    });
+  };
+
+  // Add food menu item to cart (no stock limit)
+  const addMenuToCart = (menuItem) => {
+    setErrorMessage(""); setSuccessMessage("");
+
+    setCartItems((currentItems) => {
+      const existing = currentItems.find((item) => item.id === `m-${menuItem.id}`);
+      if (existing) {
+        return currentItems.map((item) =>
+          item.id === `m-${menuItem.id}` ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...currentItems, {
+        id: `m-${menuItem.id}`,
+        productId: menuItem.id,
+        name: menuItem.name,
+        price: Number(menuItem.price),
+        stock: Infinity,
+        quantity: 1,
+        type: "food",
+      }];
     });
   };
 
   const increaseQuantity = (id) => {
-    setErrorMessage("");
-    setSuccessMessage("");
+    setErrorMessage(""); setSuccessMessage("");
     setCartItems((currentItems) =>
       currentItems.map((item) => {
         if (item.id !== id) return item;
-        if (item.quantity >= item.stock) {
+        if (item.stock !== Infinity && item.quantity >= item.stock) {
           setErrorMessage(`Only ${item.stock} ${item.name} in stock`);
           return item;
         }
@@ -108,8 +141,7 @@ function Sales({ currentUser }) {
   };
 
   const decreaseQuantity = (id) => {
-    setErrorMessage("");
-    setSuccessMessage("");
+    setErrorMessage(""); setSuccessMessage("");
     setCartItems((currentItems) =>
       currentItems
         .map((item) => item.id !== id ? item : { ...item, quantity: item.quantity - 1 })
@@ -118,17 +150,15 @@ function Sales({ currentUser }) {
   };
 
   const removeFromCart = (id) => {
-    setErrorMessage("");
-    setSuccessMessage("");
+    setErrorMessage(""); setSuccessMessage("");
     setCartItems((currentItems) => currentItems.filter((item) => item.id !== id));
   };
 
   const completeSale = async () => {
-    setErrorMessage("");
-    setSuccessMessage("");
+    setErrorMessage(""); setSuccessMessage("");
 
     if (cartItems.length === 0) {
-      setErrorMessage("Add at least one product before checkout");
+      setErrorMessage("Add at least one item before checkout");
       return;
     }
 
@@ -140,7 +170,10 @@ function Sales({ currentUser }) {
         body: JSON.stringify({
           paymentMethod,
           userId: currentUser.id,
-          items: cartItems.map((item) => ({ productId: item.id, quantity: item.quantity })),
+          items: cartItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
         }),
       });
 
@@ -159,7 +192,7 @@ function Sales({ currentUser }) {
 
   return (
     <div className="page-shell sales-page">
-      <div className="page-header-row" style={pageHeaderStyle}>
+      <div style={pageHeaderStyle}>
         <div>
           <h1 style={titleStyle}>POS Sales</h1>
           <p style={subtitleStyle}>
@@ -171,44 +204,91 @@ function Sales({ currentUser }) {
       {errorMessage && <div style={errorStyle}>{errorMessage}</div>}
       {successMessage && <div style={successStyle}>{successMessage}</div>}
 
-      <div className="responsive-two-column pos-layout" style={layoutStyle}>
-        <section className="panel-card" style={productsPanelStyle}>
-          <div className="responsive-toolbar" style={panelHeaderStyle}>
-            <h3>Products</h3>
+      <div style={layoutStyle}>
+        {/* PRODUCTS PANEL */}
+        <section style={productsPanelStyle}>
+          {/* Search */}
+          <div style={panelHeaderStyle}>
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={activeTab === "bar" ? "Search bar products..." : "Search food items..."}
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); }}
               style={searchInputStyle}
             />
           </div>
 
-          <div style={productListStyle}>
-            {isLoading && <div style={emptyPanelStyle}>Loading products...</div>}
-
-            {!isLoading && filteredProducts.map((product) => (
-              <div key={product.id} className="pos-product-row" style={productRowStyle}>
-                <div>
-                  <strong>{product.name}</strong>
-                  <p style={productMetaStyle}>
-                    {product.category || "Uncategorized"} • Stock {product.stock}
-                  </p>
-                </div>
-                <div style={productActionStyle}>
-                  <strong>{formatMoney(product.price)}</strong>
-                  <button onClick={() => addToCart(product)} style={addButtonStyle}>Add</button>
-                </div>
-              </div>
+          {/* Tabs */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+            {[
+              { key: "bar", label: "🍺 Bar Products" },
+              { key: "food", label: "🍽️ Food Menu" },
+            ].map((tab) => (
+              <button key={tab.key} onClick={() => { setActiveTab(tab.key); setSearchTerm(""); }}
+                style={{
+                  padding: "8px 16px", borderRadius: "7px", fontWeight: "600", fontSize: "13px", cursor: "pointer",
+                  background: activeTab === tab.key ? "#1f2a36" : "#eef1f5",
+                  color: activeTab === tab.key ? "#f4c85a" : "#4a4a4a",
+                  border: activeTab === tab.key ? "1px solid #1f2a36" : "1px solid #cbd5e1",
+                  transition: "all 0.15s",
+                }}>
+                {tab.label}
+              </button>
             ))}
+          </div>
 
-            {!isLoading && filteredProducts.length === 0 && (
-              <div style={emptyPanelStyle}>No products found.</div>
+          {/* Product / Menu list */}
+          <div style={productListStyle}>
+            {isLoading && <div style={emptyPanelStyle}>Loading...</div>}
+
+            {/* BAR PRODUCTS */}
+            {!isLoading && activeTab === "bar" && (
+              <>
+                {filteredProducts.map((product) => (
+                  <div key={product.id} style={productRowStyle}>
+                    <div>
+                      <strong>{product.name}</strong>
+                      <p style={productMetaStyle}>
+                        {product.category || "Uncategorized"} • Stock {product.stock_quantity ?? product.stock}
+                      </p>
+                    </div>
+                    <div style={productActionStyle}>
+                      <strong>{formatMoney(product.selling_price ?? product.price)}</strong>
+                      <button onClick={() => addProductToCart(product)} style={addButtonStyle}>Add</button>
+                    </div>
+                  </div>
+                ))}
+                {filteredProducts.length === 0 && <div style={emptyPanelStyle}>No bar products found.</div>}
+              </>
+            )}
+
+            {/* FOOD MENU */}
+            {!isLoading && activeTab === "food" && (
+              <>
+                {filteredMenu.map((item) => (
+                  <div key={item.id} style={productRowStyle}>
+                    <div>
+                      <strong>{item.name}</strong>
+                      <p style={productMetaStyle}>Food</p>
+                    </div>
+                    <div style={productActionStyle}>
+                      <strong>{formatMoney(item.price)}</strong>
+                      <button onClick={() => addMenuToCart(item)} style={{ ...addButtonStyle, background: "#c9a84c", color: "#1a1a2e" }}>Add</button>
+                    </div>
+                  </div>
+                ))}
+                {filteredMenu.length === 0 && (
+                  <div style={emptyPanelStyle}>
+                    {menuItems.length === 0 ? "No food items on the menu yet. Add some from the Food Menu page." : "No food items match your search."}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
 
-        <aside className="panel-card pos-cart-panel" style={cartPanelStyle}>
+        {/* CART PANEL */}
+        <aside style={cartPanelStyle}>
           <h3>Current Cart</h3>
 
           {cartItems.length === 0 && <div style={cartEmptyStyle}>No items added yet.</div>}
@@ -219,7 +299,12 @@ function Sales({ currentUser }) {
                 <div key={item.id} style={cartItemStyle}>
                   <div>
                     <strong>{item.name}</strong>
-                    <p style={productMetaStyle}>{formatMoney(item.price)} each</p>
+                    <p style={productMetaStyle}>
+                      {formatMoney(item.price)} each
+                      <span style={{ marginLeft: "6px", fontSize: "11px", background: item.type === "food" ? "#fff8e1" : "#e3f2fd", color: item.type === "food" ? "#92400e" : "#1565c0", padding: "1px 6px", borderRadius: "10px" }}>
+                        {item.type === "food" ? "Food" : "Bar"}
+                      </span>
+                    </p>
                   </div>
                   <div style={quantityControlsStyle}>
                     <button onClick={() => decreaseQuantity(item.id)} style={quantityButtonStyle}><FaMinus /></button>
@@ -260,8 +345,8 @@ const subtitleStyle = { color: "#6b7280", fontSize: "15px", textTransform: "capi
 const layoutStyle = { display: "grid", gridTemplateColumns: "1fr 380px", gap: "20px" };
 const productsPanelStyle = { background: "white", border: "1px solid #dde3ea", borderRadius: "8px", padding: "20px", minHeight: "420px", boxShadow: "0 10px 24px rgba(31, 42, 54, 0.06)" };
 const cartPanelStyle = { background: "white", border: "1px solid #dde3ea", borderRadius: "8px", padding: "20px", minHeight: "420px", boxShadow: "0 10px 24px rgba(31, 42, 54, 0.06)" };
-const panelHeaderStyle = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "15px", marginBottom: "20px" };
-const searchInputStyle = { width: "260px", padding: "11px 12px", border: "1px solid #cbd5e1", borderRadius: "6px", outline: "none" };
+const panelHeaderStyle = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "15px", marginBottom: "12px" };
+const searchInputStyle = { width: "100%", padding: "11px 12px", border: "1px solid #cbd5e1", borderRadius: "6px", outline: "none" };
 const productListStyle = { display: "grid", gap: "10px" };
 const productRowStyle = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "14px", borderBottom: "1px solid #eef1f5", padding: "13px 0" };
 const productMetaStyle = { color: "#6b7280", fontSize: "13px", marginTop: "4px" };
