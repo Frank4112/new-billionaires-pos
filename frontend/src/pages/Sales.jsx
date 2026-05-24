@@ -98,7 +98,7 @@ function Sales({ currentUser }) {
         price: Number(product.price ?? product.selling_price),
         stock,
         quantity: 1,
-        type: "bar",
+        type: "product",
       }];
     });
   };
@@ -171,9 +171,10 @@ function Sales({ currentUser }) {
           paymentMethod,
           userId: currentUser.id,
           items: cartItems.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-          })),
+  itemId: item.id,
+  itemType: item.type,
+  quantity: item.quantity
+})),
         }),
       });
 
