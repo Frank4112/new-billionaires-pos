@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
       GROUP BY payment_method
     `, [start, end]);
 
-    // 3. TOP PRODUCTS BY QUANTITY (with profit)
+    // 3. TOP BAR PRODUCTS BY QUANTITY (with profit)
     const [topByQuantity] = await db.query(`
       SELECT
         products.name, products.category, products.cost_price AS costPrice,
@@ -46,13 +46,14 @@ router.get("/", async (req, res) => {
       FROM sale_items
       JOIN products ON sale_items.product_id = products.id
       JOIN sales ON sale_items.sale_id = sales.id
-      WHERE DATE(sales.created_at) BETWEEN ? AND ?
+      WHERE sale_items.item_type = 'bar'
+      AND DATE(sales.created_at) BETWEEN ? AND ?
       GROUP BY products.id, products.name, products.category, products.cost_price
       ORDER BY totalQuantity DESC
       LIMIT 10
     `, [start, end]);
 
-    // 4. TOP PRODUCTS BY REVENUE (with profit)
+    // 4. TOP BAR PRODUCTS BY REVENUE (with profit)
     const [topByRevenue] = await db.query(`
       SELECT
         products.name, products.category, products.cost_price AS costPrice,
@@ -63,10 +64,62 @@ router.get("/", async (req, res) => {
       FROM sale_items
       JOIN products ON sale_items.product_id = products.id
       JOIN sales ON sale_items.sale_id = sales.id
-      WHERE DATE(sales.created_at) BETWEEN ? AND ?
+      WHERE sale_items.item_type = 'bar'
+      AND DATE(sales.created_at) BETWEEN ? AND ?
       GROUP BY products.id, products.name, products.category, products.cost_price
       ORDER BY totalRevenue DESC
       LIMIT 10
+    `, [start, end]);
+
+    // 5. TOP FOOD ITEMS BY QUANTITY
+    const [foodByQuantity] = await db.query(`
+      SELECT
+        menu_items.name,
+        'Food' AS category,
+        SUM(sale_items.quantity) AS totalQuantity,
+        SUM(sale_items.quantity * sale_items.price) AS totalRevenue
+      FROM sale_items
+      JOIN menu_items ON sale_items.menu_item_id = menu_items.id
+      JOIN sales ON sale_items.sale_id = sales.id
+      WHERE sale_items.item_type = 'food'
+      AND DATE(sales.created_at) BETWEEN ? AND ?
+      GROUP BY menu_items.id, menu_items.name
+      ORDER BY totalQuantity DESC
+      LIMIT 10
+    `, [start, end]);
+
+    // 6. TOP FOOD ITEMS BY REVENUE
+    const [foodByRevenue] = await db.query(`
+      SELECT
+        menu_items.name,
+        'Food' AS category,
+        SUM(sale_items.quantity) AS totalQuantity,
+        SUM(sale_items.quantity * sale_items.price) AS totalRevenue
+      FROM sale_items
+      JOIN menu_items ON sale_items.menu_item_id = menu_items.id
+      JOIN sales ON sale_items.sale_id = sales.id
+      WHERE sale_items.item_type = 'food'
+      AND DATE(sales.created_at) BETWEEN ? AND ?
+      GROUP BY menu_items.id, menu_items.name
+      ORDER BY totalRevenue DESC
+      LIMIT 10
+    `, [start, end]);
+
+    // 7. BAR VS FOOD PERFORMANCE
+    const [itemTypeBreakdown] = await db.query(`
+      SELECT
+        CASE sale_items.item_type
+          WHEN 'food' THEN 'Food'
+          ELSE 'Bar'
+        END AS type,
+        SUM(sale_items.quantity) AS totalQuantity,
+        SUM(sale_items.quantity * sale_items.price) AS totalRevenue,
+        COUNT(DISTINCT sale_items.sale_id) AS totalOrders
+      FROM sale_items
+      JOIN sales ON sale_items.sale_id = sales.id
+      WHERE DATE(sales.created_at) BETWEEN ? AND ?
+      GROUP BY sale_items.item_type
+      ORDER BY totalRevenue DESC
     `, [start, end]);
 
     // 5. PROFIT SUMMARY
@@ -78,7 +131,8 @@ router.get("/", async (req, res) => {
       FROM sale_items
       JOIN products ON sale_items.product_id = products.id
       JOIN sales ON sale_items.sale_id = sales.id
-      WHERE DATE(sales.created_at) BETWEEN ? AND ?
+      WHERE sale_items.item_type = 'bar'
+      AND DATE(sales.created_at) BETWEEN ? AND ?
     `, [start, end]);
 
     // 6. CASHIER PERFORMANCE
@@ -147,6 +201,9 @@ router.get("/", async (req, res) => {
       paymentBreakdown,
       topByQuantity,
       topByRevenue,
+      foodByQuantity,
+      foodByRevenue,
+      itemTypeBreakdown,
       byCashier,
       dailyTrend,
       hourlyTrend,

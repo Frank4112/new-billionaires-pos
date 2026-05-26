@@ -259,19 +259,19 @@ export default function Reports() {
                 {/* Profit cards */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "24px" }}>
                   <StatCard
-                    label="Cost of Goods Sold"
+                    label="Bar Cost of Goods Sold"
                     value={hasCostData ? formatMoney(cost) : "Set cost prices"}
                     sub={hasCostData ? "total purchase cost" : "in Stock Management"}
                     accent="#dc2626"
                   />
                   <StatCard
-                    label="Gross Profit"
+                    label="Bar Gross Profit"
                     value={hasCostData ? formatMoney(profit) : "—"}
                     sub={hasCostData ? "revenue minus cost" : "requires cost prices"}
                     accent={profit >= 0 ? "#2e7d32" : "#dc2626"}
                   />
                   <StatCard
-                    label="Profit Margin"
+                    label="Bar Profit Margin"
                     value={hasCostData ? `${margin}%` : "—"}
                     sub={hasCostData ? `${formatMoney(profit)} on ${formatMoney(revenue)}` : "requires cost prices"}
                     accent={Number(margin) >= 30 ? "#2e7d32" : Number(margin) >= 10 ? "#d97706" : "#dc2626"}
@@ -348,6 +348,23 @@ export default function Reports() {
                 ))}
               </div>
 
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                <div style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "10px", padding: "24px" }}>
+                  <h3 style={{ margin: "0 0 20px", fontSize: "16px", fontWeight: "700" }}>Bar vs Food Revenue</h3>
+                  {(data.itemTypeBreakdown || []).length === 0
+                    ? <p style={{ color: "#888" }}>No sales data for this period</p>
+                    : <BarChart data={data.itemTypeBreakdown} labelKey="type" valueKey="totalRevenue" color="#1a1a2e" formatValue={formatMoney} />
+                  }
+                </div>
+                <div style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "10px", padding: "24px" }}>
+                  <h3 style={{ margin: "0 0 20px", fontSize: "16px", fontWeight: "700" }}>Bar vs Food Units Sold</h3>
+                  {(data.itemTypeBreakdown || []).length === 0
+                    ? <p style={{ color: "#888" }}>No sales data for this period</p>
+                    : <BarChart data={data.itemTypeBreakdown} labelKey="type" valueKey="totalQuantity" color="#c9a84c" formatValue={formatNum} />
+                  }
+                </div>
+              </div>
+
               <div style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "10px", padding: "24px" }}>
                 <h3 style={{ margin: "0 0 20px", fontSize: "16px", fontWeight: "700" }}>
                   Top Products by {productView === "quantity" ? "Units Sold" : "Revenue"}
@@ -359,6 +376,22 @@ export default function Reports() {
                       labelKey="name"
                       valueKey={productView === "quantity" ? "totalQuantity" : "totalRevenue"}
                       color="#c9a84c"
+                      formatValue={productView === "quantity" ? formatNum : formatMoney}
+                    />
+                }
+              </div>
+
+              <div style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "10px", padding: "24px" }}>
+                <h3 style={{ margin: "0 0 20px", fontSize: "16px", fontWeight: "700" }}>
+                  Top Food Items by {productView === "quantity" ? "Units Sold" : "Revenue"}
+                </h3>
+                {(productView === "quantity" ? data.foodByQuantity || [] : data.foodByRevenue || []).length === 0
+                  ? <p style={{ color: "#888" }}>No food sales data for this period</p>
+                  : <BarChart
+                      data={productView === "quantity" ? data.foodByQuantity : data.foodByRevenue}
+                      labelKey="name"
+                      valueKey={productView === "quantity" ? "totalQuantity" : "totalRevenue"}
+                      color="#2e7d32"
                       formatValue={productView === "quantity" ? formatNum : formatMoney}
                     />
                 }
@@ -414,6 +447,40 @@ export default function Reports() {
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={{ background: "#fff", border: "1px solid #e0ddd5", borderRadius: "10px", overflow: "hidden" }}>
+                <div style={{ padding: "16px 20px", borderBottom: "2px solid #e0ddd5", background: "#f5f3ee" }}>
+                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700" }}>Food Performance</h3>
+                </div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle}>#</th>
+                      <th style={thStyle}>Food Item</th>
+                      <th style={thStyle}>Category</th>
+                      <th style={thStyle}>Qty Sold</th>
+                      <th style={thStyle}>Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(productView === "quantity" ? data.foodByQuantity || [] : data.foodByRevenue || []).length === 0 ? (
+                      <tr><td colSpan={5} style={{ ...tdStyle, textAlign: "center", color: "#888" }}>No food sales data</td></tr>
+                    ) : (productView === "quantity" ? data.foodByQuantity : data.foodByRevenue).map((item, i) => (
+                      <tr key={i} {...hoverRow}>
+                        <td style={{ ...tdStyle, color: "#2e7d32", fontWeight: "700" }}>{i + 1}</td>
+                        <td style={{ ...tdStyle, fontWeight: "600" }}>{item.name}</td>
+                        <td style={tdStyle}>
+                          <span style={{ background: "#e8f5e9", color: "#2e7d32", padding: "2px 8px", borderRadius: "20px", fontSize: "12px" }}>
+                            Food
+                          </span>
+                        </td>
+                        <td style={tdStyle}>{formatNum(item.totalQuantity)}</td>
+                        <td style={{ ...tdStyle, fontWeight: "600" }}>{formatMoney(item.totalRevenue)}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
