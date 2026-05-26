@@ -69,12 +69,15 @@ router.get("/:id", async (req, res) => {
     const [saleItems] = await db.query(`
       SELECT
         sale_items.id,
-        products.name,
+        sale_items.item_type AS type,
+        COALESCE(products.name, menu_items.name) AS name,
         sale_items.quantity,
         sale_items.price
       FROM sale_items
-      JOIN products
+      LEFT JOIN products
         ON sale_items.product_id = products.id
+      LEFT JOIN menu_items
+        ON sale_items.menu_item_id = menu_items.id
       WHERE sale_items.sale_id = ?
     `, [saleId]);
 
@@ -116,10 +119,14 @@ router.post("/", async (req, res) => {
     for (const item of items) {
       const productId = Number(item.productId);
       const quantity = Number(item.quantity);
-      const itemType = item.type || "bar"; // "bar" or "food"
+      const itemType = item.type || "bar";
 
       if (!productId || !quantity || quantity < 1) {
         throw new Error("Each cart item must include a valid product and quantity");
+      }
+
+      if (!["bar", "food"].includes(itemType)) {
+        throw new Error("Cart item type must be bar or food");
       }
 
       if (itemType === "food") {
@@ -139,7 +146,7 @@ router.post("/", async (req, res) => {
         const price = Number(menuItem.price);
         totalAmount += price * quantity;
 
-        saleItems.push({ productId, quantity, price, type: "food" });
+        saleItems.push({ menuItemId: productId, quantity, price, type: "food" });
 
       } else {
         // Look up in products — check stock
@@ -181,15 +188,22 @@ router.post("/", async (req, res) => {
     const saleId = saleResult.insertId;
 
     for (const item of saleItems) {
-      // Insert sale item — use product_id for bar, menu_item_id for food
-      // We store both in product_id column but only deduct stock for bar items
       await connection.query(
-        "INSERT INTO sale_items (sale_id, product_id, quantity, price) VALUES (?, ?, ?, ?)",
-        [saleId, item.productId, item.quantity, item.price]
+        `
+        INSERT INTO sale_items (sale_id, item_type, product_id, menu_item_id, quantity, price)
+        VALUES (?, ?, ?, ?, ?, ?)
+        `,
+        [
+          saleId,
+          item.type,
+          item.type === "bar" ? item.productId : null,
+          item.type === "food" ? item.menuItemId : null,
+          item.quantity,
+          item.price,
+        ]
       );
 
       if (item.type === "bar") {
-        // Deduct stock only for bar products
         await connection.query(
           "UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?",
           [item.quantity, item.productId]

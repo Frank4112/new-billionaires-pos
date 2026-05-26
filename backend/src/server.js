@@ -32,7 +32,7 @@ app.use("/api/sales", verifyToken, saleRoutes);
 app.use("/api/reports", verifyToken, authorizeRoles("sudo_admin", "admin"), reportRoutes);
 app.use("/api/stock", verifyToken, authorizeRoles("sudo_admin", "admin"), stockRoutes);
 app.use("/api/users", verifyToken, authorizeRoles("sudo_admin", "admin"), userRoutes);
-app.use("/api/menu", verifyToken, authorizeRoles("sudo_admin", "admin"), menuRoutes); // Protect menu routes
+app.use("/api/menu", verifyToken, menuRoutes);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

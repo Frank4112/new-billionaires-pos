@@ -12,6 +12,17 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("token")}`,
 });
 
+const fetchJson = async (url, fallbackMessage) => {
+  const response = await fetch(url, { headers: getAuthHeaders() });
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || data.error || fallbackMessage);
+  }
+
+  return data;
+};
+
 function Sales({ currentUser }) {
   const [products, setProducts] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
@@ -35,8 +46,8 @@ function Sales({ currentUser }) {
     let isActive = true;
 
     Promise.all([
-      fetch(PRODUCTS_API_URL, { headers: getAuthHeaders() }).then((r) => r.json()),
-      fetch(MENU_API_URL, { headers: getAuthHeaders() }).then((r) => r.json()),
+      fetchJson(PRODUCTS_API_URL, "Failed to load products"),
+      fetchJson(MENU_API_URL, "Failed to load food menu"),
     ])
       .then(([productsData, menuData]) => {
         if (isActive) {

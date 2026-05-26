@@ -1,6 +1,7 @@
 // routes/menu.js
 import express from "express";
 import db from "../config/db.js";
+import { authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.get("/", async (req, res) => {
 });
 
 // ADD MENU ITEM
-router.post("/", async (req, res) => {
+router.post("/", authorizeRoles("sudo_admin", "admin"), async (req, res) => {
   const { name, price } = req.body;
   if (!name || !price) {
     return res.status(400).json({ error: "Name and price are required." });
@@ -34,7 +35,7 @@ router.post("/", async (req, res) => {
 });
 
 // EDIT MENU ITEM
-router.put("/:id", async (req, res) => {
+router.put("/:id", authorizeRoles("sudo_admin", "admin"), async (req, res) => {
   const { name, price } = req.body;
   const { id } = req.params;
   if (!name || !price) {
@@ -52,7 +53,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE MENU ITEM
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authorizeRoles("sudo_admin", "admin"), async (req, res) => {
   const { id } = req.params;
   try {
     await db.query("DELETE FROM menu_items WHERE id = ?", [id]);
