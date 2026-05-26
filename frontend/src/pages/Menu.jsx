@@ -38,7 +38,31 @@ export default function Menu() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => {
+    let isActive = true;
+
+    fetch(MENU_URL, { headers: getAuthHeaders() })
+      .then((res) => res.json())
+      .then((data) => {
+        if (isActive) {
+          setItems(Array.isArray(data) ? data : []);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setErrorMessage("Failed to load menu.");
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!successMessage) return;
@@ -94,7 +118,7 @@ export default function Menu() {
   );
 
   return (
-    <div style={{ fontFamily: "'Segoe UI', sans-serif", color: "#1a1a2e" }}>
+    <div className="page-shell menu-page" style={{ fontFamily: "'Segoe UI', sans-serif", color: "#1a1a2e" }}>
 
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>

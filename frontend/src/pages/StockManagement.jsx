@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { FaPlus, FaBoxOpen, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -82,6 +82,13 @@ function ProductSearch({ products, value, onChange }) {
 }
 
 export default function StockManagement() {
+  const defaultRange = useMemo(() => {
+    const now = new Date();
+    return {
+      monthStart: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`,
+      today: now.toISOString().split("T")[0],
+    };
+  }, []);
   const [products, setProducts] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -113,11 +120,8 @@ export default function StockManagement() {
   const [editCostPrice, setEditCostPrice] = useState("");
   const [editMinStock, setEditMinStock] = useState("");
 
-  const now = new Date();
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-  const today = now.toISOString().split("T")[0];
-  const [from, setFrom] = useState(monthStart);
-  const [to, setTo] = useState(today);
+  const [from, setFrom] = useState(defaultRange.monthStart);
+  const [to, setTo] = useState(defaultRange.today);
 
   const fetchProducts = async () => {
     try {
@@ -144,7 +148,7 @@ export default function StockManagement() {
       try {
         const [productsRes, historyRes] = await Promise.all([
           fetch(`${STOCK_URL}/products`, { headers: getAuthHeaders() }),
-          fetch(`${STOCK_URL}/history?from=${monthStart}&to=${today}`, { headers: getAuthHeaders() }),
+          fetch(`${STOCK_URL}/history?from=${defaultRange.monthStart}&to=${defaultRange.today}`, { headers: getAuthHeaders() }),
         ]);
         const [productsData, historyData] = await Promise.all([productsRes.json(), historyRes.json()]);
         if (isActive) {
@@ -159,7 +163,7 @@ export default function StockManagement() {
     };
     loadInitialStockData();
     return () => { isActive = false; };
-  }, []);
+  }, [defaultRange]);
 
   useEffect(() => {
     if (!successMessage) return;
@@ -278,7 +282,7 @@ export default function StockManagement() {
   );
 
   return (
-    <div style={{ fontFamily: "'Segoe UI', sans-serif", color: "#1a1a2e" }}>
+    <div className="page-shell stock-page" style={{ fontFamily: "'Segoe UI', sans-serif", color: "#1a1a2e" }}>
 
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
