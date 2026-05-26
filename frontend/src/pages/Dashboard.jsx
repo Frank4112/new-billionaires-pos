@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCashRegister, FaBox, FaChartBar, FaReceipt, FaRadiation, FaRadiationAlt, FaRainbow, FaCloudSunRain, FaRandom, FaRedditAlien, FaHistory } from "react-icons/fa";
+import { FaCashRegister, FaBox, FaChartBar, FaReceipt, FaHistory } from "react-icons/fa";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -109,7 +109,7 @@ export default function Dashboard() {
   const topProducts = reports?.topByQuantity?.slice(0, 5) || [];
 
   return (
-    <div style={{ fontFamily: "'Segoe UI', sans-serif", color: "#1a1a2e" }}>
+    <div className="page-shell dashboard-page" style={{ fontFamily: "'Segoe UI', sans-serif", color: "#1a1a2e" }}>
 
       <div style={{ marginBottom: "24px" }}>
         <h1 style={{ fontSize: "30px", fontWeight: "700", margin: "0 0 4px" }}>Dashboard</h1>

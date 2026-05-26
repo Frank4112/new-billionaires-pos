@@ -66,7 +66,7 @@ function App() {
         {/* Right side — column layout, fills remaining space */}
         <div
           className="app-main"
-          style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: theme === "dark" ? "#09051c" : "#f7f7f4" }}
+          style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: theme === "dark" ? "#070909" : "#f7f7f4" }}
         >
 
           {/* Header — always visible at top */}

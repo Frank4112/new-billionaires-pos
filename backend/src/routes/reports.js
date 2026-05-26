@@ -47,6 +47,7 @@ router.get("/", async (req, res) => {
       JOIN products ON sale_items.product_id = products.id
       JOIN sales ON sale_items.sale_id = sales.id
       WHERE COALESCE(sale_items.item_type, 'bar') = 'bar'
+      AND sale_items.menu_item_id IS NULL
       AND DATE(sales.created_at) BETWEEN ? AND ?
       GROUP BY products.id, products.name, products.category, products.cost_price
       ORDER BY totalQuantity DESC
@@ -65,6 +66,7 @@ router.get("/", async (req, res) => {
       JOIN products ON sale_items.product_id = products.id
       JOIN sales ON sale_items.sale_id = sales.id
       WHERE COALESCE(sale_items.item_type, 'bar') = 'bar'
+      AND sale_items.menu_item_id IS NULL
       AND DATE(sales.created_at) BETWEEN ? AND ?
       GROUP BY products.id, products.name, products.category, products.cost_price
       ORDER BY totalRevenue DESC
@@ -74,16 +76,16 @@ router.get("/", async (req, res) => {
     // 5. TOP FOOD ITEMS BY QUANTITY
     const [foodByQuantity] = await db.query(`
       SELECT
-        menu_items.name,
+        COALESCE(menu_items.name, CONCAT('Food Item #', COALESCE(sale_items.menu_item_id, sale_items.product_id))) AS name,
         'Food' AS category,
         SUM(sale_items.quantity) AS totalQuantity,
         SUM(sale_items.quantity * sale_items.price) AS totalRevenue
       FROM sale_items
-      JOIN menu_items ON COALESCE(sale_items.menu_item_id, sale_items.product_id) = menu_items.id
+      LEFT JOIN menu_items ON COALESCE(sale_items.menu_item_id, sale_items.product_id) = menu_items.id
       JOIN sales ON sale_items.sale_id = sales.id
-      WHERE sale_items.item_type = 'food'
+      WHERE (sale_items.item_type = 'food' OR sale_items.menu_item_id IS NOT NULL)
       AND DATE(sales.created_at) BETWEEN ? AND ?
-      GROUP BY menu_items.id, menu_items.name
+      GROUP BY COALESCE(sale_items.menu_item_id, sale_items.product_id), menu_items.name
       ORDER BY totalQuantity DESC
       LIMIT 10
     `, [start, end]);
@@ -91,16 +93,16 @@ router.get("/", async (req, res) => {
     // 6. TOP FOOD ITEMS BY REVENUE
     const [foodByRevenue] = await db.query(`
       SELECT
-        menu_items.name,
+        COALESCE(menu_items.name, CONCAT('Food Item #', COALESCE(sale_items.menu_item_id, sale_items.product_id))) AS name,
         'Food' AS category,
         SUM(sale_items.quantity) AS totalQuantity,
         SUM(sale_items.quantity * sale_items.price) AS totalRevenue
       FROM sale_items
-      JOIN menu_items ON COALESCE(sale_items.menu_item_id, sale_items.product_id) = menu_items.id
+      LEFT JOIN menu_items ON COALESCE(sale_items.menu_item_id, sale_items.product_id) = menu_items.id
       JOIN sales ON sale_items.sale_id = sales.id
-      WHERE sale_items.item_type = 'food'
+      WHERE (sale_items.item_type = 'food' OR sale_items.menu_item_id IS NOT NULL)
       AND DATE(sales.created_at) BETWEEN ? AND ?
-      GROUP BY menu_items.id, menu_items.name
+      GROUP BY COALESCE(sale_items.menu_item_id, sale_items.product_id), menu_items.name
       ORDER BY totalRevenue DESC
       LIMIT 10
     `, [start, end]);
@@ -108,8 +110,8 @@ router.get("/", async (req, res) => {
     // 7. BAR VS FOOD PERFORMANCE
     const [itemTypeBreakdown] = await db.query(`
       SELECT
-        CASE COALESCE(sale_items.item_type, 'bar')
-          WHEN 'food' THEN 'Food'
+        CASE
+          WHEN sale_items.item_type = 'food' OR sale_items.menu_item_id IS NOT NULL THEN 'Food'
           ELSE 'Bar'
         END AS type,
         SUM(sale_items.quantity) AS totalQuantity,
@@ -118,7 +120,7 @@ router.get("/", async (req, res) => {
       FROM sale_items
       JOIN sales ON sale_items.sale_id = sales.id
       WHERE DATE(sales.created_at) BETWEEN ? AND ?
-      GROUP BY CASE COALESCE(sale_items.item_type, 'bar') WHEN 'food' THEN 'Food' ELSE 'Bar' END
+      GROUP BY CASE WHEN sale_items.item_type = 'food' OR sale_items.menu_item_id IS NOT NULL THEN 'Food' ELSE 'Bar' END
       ORDER BY totalRevenue DESC
     `, [start, end]);
 
@@ -132,6 +134,7 @@ router.get("/", async (req, res) => {
       JOIN products ON sale_items.product_id = products.id
       JOIN sales ON sale_items.sale_id = sales.id
       WHERE COALESCE(sale_items.item_type, 'bar') = 'bar'
+      AND sale_items.menu_item_id IS NULL
       AND DATE(sales.created_at) BETWEEN ? AND ?
     `, [start, end]);
 

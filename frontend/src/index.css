@@ -79,19 +79,19 @@ select {
   min-width: 0;
 }
 
-/* Dark purple theme */
+/* Dark gold theme */
 .app-shell[data-theme="dark"] {
   color-scheme: dark;
   background:
-    radial-gradient(circle at 22% 10%, rgba(124, 45, 255, 0.2), transparent 28%),
-    linear-gradient(135deg, #06030f 0%, #0b0620 46%, #160633 100%);
+    radial-gradient(circle at 22% 10%, rgba(212, 164, 50, 0.14), transparent 28%),
+    linear-gradient(135deg, #050606 0%, #090b0b 48%, #11100c 100%);
   color: #f8f7ff;
 }
 
 .app-shell[data-theme="dark"] .app-content {
   background:
-    radial-gradient(circle at 85% 8%, rgba(214, 108, 255, 0.14), transparent 24%),
-    linear-gradient(180deg, #0a061c 0%, #12072b 100%) !important;
+    radial-gradient(circle at 85% 8%, rgba(244, 200, 90, 0.12), transparent 24%),
+    linear-gradient(180deg, #070909 0%, #0d0f0f 100%) !important;
 }
 
 .app-shell[data-theme="dark"] .page-shell {
@@ -109,14 +109,14 @@ select {
 .app-shell[data-theme="dark"] .page-shell p,
 .app-shell[data-theme="dark"] .page-shell span,
 .app-shell[data-theme="dark"] .page-shell td {
-  color: #c9c2ea;
+  color: #c9c3b4;
 }
 
 .app-shell[data-theme="dark"] .page-shell [style*="background: white"],
 .app-shell[data-theme="dark"] .page-shell [style*="background: #fff"],
 .app-shell[data-theme="dark"] .page-shell [style*="background: rgb(255, 255, 255)"] {
-  background: rgba(18, 10, 42, 0.88) !important;
-  border-color: rgba(168, 85, 247, 0.28) !important;
+  background: rgba(11, 14, 14, 0.9) !important;
+  border-color: rgba(212, 164, 50, 0.24) !important;
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32) !important;
 }
 
@@ -124,39 +124,82 @@ select {
 .app-shell[data-theme="dark"] .page-shell [style*="background: #f7f7f4"],
 .app-shell[data-theme="dark"] .page-shell [style*="background: #eef1f5"],
 .app-shell[data-theme="dark"] .page-shell [style*="background: #faf9f6"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #f0ede6"] {
-  background: rgba(36, 16, 74, 0.78) !important;
-  border-color: rgba(168, 85, 247, 0.28) !important;
+.app-shell[data-theme="dark"] .page-shell [style*="background: #f0ede6"],
+.app-shell[data-theme="dark"] .page-shell [style*="background: #fff8e1"],
+.app-shell[data-theme="dark"] .page-shell [style*="background: #e8f5e9"],
+.app-shell[data-theme="dark"] .page-shell [style*="background: #e3f2fd"],
+.app-shell[data-theme="dark"] .page-shell [style*="background: #fef2f2"] {
+  background: rgba(20, 20, 17, 0.86) !important;
+  border-color: rgba(212, 164, 50, 0.24) !important;
+}
+
+.app-shell[data-theme="dark"] .page-shell [style*="background: #1a1a2e"],
+.app-shell[data-theme="dark"] .page-shell [style*="background: #1f2a36"] {
+  background: #151411 !important;
+  border-color: rgba(212, 164, 50, 0.42) !important;
 }
 
 .app-shell[data-theme="dark"] .page-shell input,
 .app-shell[data-theme="dark"] .page-shell select {
-  background: #120a2b !important;
+  background: #0b0e0e !important;
   color: #f8f7ff !important;
-  border-color: rgba(168, 85, 247, 0.38) !important;
+  border-color: rgba(212, 164, 50, 0.34) !important;
 }
 
 .app-shell[data-theme="dark"] .page-shell input::placeholder {
-  color: #8f87ad;
+  color: #8d8778;
 }
 
 .app-shell[data-theme="dark"] .page-shell table th {
-  background: rgba(36, 16, 74, 0.92) !important;
-  border-color: rgba(168, 85, 247, 0.28) !important;
-  color: #a8a3c7 !important;
+  background: rgba(20, 20, 17, 0.94) !important;
+  border-color: rgba(212, 164, 50, 0.24) !important;
+  color: #b7aa88 !important;
 }
 
 .app-shell[data-theme="dark"] .page-shell table td {
-  border-color: rgba(168, 85, 247, 0.18) !important;
+  border-color: rgba(212, 164, 50, 0.16) !important;
+}
+
+.app-shell[data-theme="dark"] .page-shell [style*="color: #1a1a2e"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #2d2d2d"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #4a4a4a"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #6b6b6b"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #1565c0"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #2e7d32"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #d97706"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #dc2626"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #92400e"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: rgb(26, 26, 46)"] {
+  color: #f8f7ff !important;
+}
+
+.app-shell[data-theme="dark"] .page-shell [style*="color: #c9a84c"],
+.app-shell[data-theme="dark"] .page-shell [style*="color: #f4c85a"] {
+  color: #f4c85a !important;
 }
 
 .app-shell[data-theme="dark"] .page-shell button {
-  border-color: rgba(168, 85, 247, 0.4) !important;
+  border-color: rgba(212, 164, 50, 0.38) !important;
 }
 
 .app-shell[data-theme="dark"] .page-shell button:not([style*="background: #1a1a2e"]):not([style*="background: #1f2a36"]):not([style*="background: #c9a84c"]):not([style*="background: #f4c85a"]) {
-  background: rgba(36, 16, 74, 0.92) !important;
+  background: rgba(20, 20, 17, 0.92) !important;
   color: #f8f7ff !important;
+}
+
+.app-shell[data-theme="dark"] .reports-page svg circle {
+  fill: #0b0e0e !important;
+}
+
+.app-shell[data-theme="dark"] .reports-page svg text {
+  fill: #f8f7ff !important;
+}
+
+.app-shell[data-theme="dark"] .dashboard-page span[style*="text-transform: capitalize"],
+.app-shell[data-theme="dark"] .reports-page span[style*="border-radius: 20px"] {
+  background: rgba(20, 20, 17, 0.92) !important;
+  border: 1px solid rgba(212, 164, 50, 0.32) !important;
+  color: #f4c85a !important;
 }
 
 @media (max-width: 1180px) {
