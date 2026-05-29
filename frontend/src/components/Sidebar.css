@@ -14,40 +14,6 @@
   -ms-overflow-style: none;
 }
 
-.app-shell[data-theme="dark"] .sidebar {
-  background:
-    radial-gradient(circle at 50% 8%, rgba(244, 200, 90, 0.18), transparent 30%),
-    linear-gradient(180deg, #050606 0%, #0b0e0e 100%);
-  border-right-color: rgba(212, 164, 50, 0.32);
-}
-
-.app-shell[data-theme="dark"] .sidebar-brand h2 {
-  color: #f4c85a;
-}
-
-.app-shell[data-theme="dark"] .sidebar-brand p,
-.app-shell[data-theme="dark"] .sidebar-item {
-  color: #f8f7ff;
-}
-
-.app-shell[data-theme="dark"] .sidebar-item:hover {
-  background: rgba(212, 164, 50, 0.16);
-}
-
-.app-shell[data-theme="dark"] .sidebar-item.active {
-  background: linear-gradient(135deg, #c69219 0%, #f4c85a 100%);
-  color: #111111;
-  box-shadow: 0 10px 24px rgba(212, 164, 50, 0.3);
-}
-
-.app-shell[data-theme="dark"] .sidebar-user {
-  background: rgba(11, 14, 14, 0.88);
-  border-color: rgba(212, 164, 50, 0.24);
-}
-
-.app-shell[data-theme="dark"] .sidebar-user-icon {
-  color: #f4c85a;
-}
 
 .sidebar::-webkit-scrollbar {
   display: none;

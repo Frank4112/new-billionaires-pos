@@ -8,20 +8,11 @@ import Header from "./components/Header";
 
 import Dashboard from "./pages/Dashboard";
 import Sales from "./pages/Sales";
-import Reports from "./pages/Reports";
-import Products from "./pages/Products";
-import SalesHistory from "./pages/SalesHistory";
-import Login from "./pages/Login";
-import Users from "./pages/Users";
-import StockManagement from "./pages/StockManagement";
-import Menu from "./pages/Menu";
-
-function App() {
   const [user, setUser] = useState(() => {
     const saved = sessionStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  
 
   const toggleTheme = () => {
     setTheme((currentTheme) => {
@@ -43,7 +34,6 @@ function App() {
     setUser(null);
     window.location.href = "/";
   };
-
   if (!user) {
     return <Login onLogin={handleLogin} />;
   }
@@ -53,11 +43,11 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Full viewport, nothing overflows at root level */}
+          style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "#f7f7f4" }}
       <div
         className="app-shell"
         data-theme={theme}
-        style={{ display: "flex", height: "100vh", overflow: "hidden" }}
+          <Header currentUser={user} onLogout={handleLogout} />
       >
 
         {/* Sidebar — fixed height, does not scroll with content */}

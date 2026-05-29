@@ -79,66 +79,6 @@ select {
   min-width: 0;
 }
 
-/* Dark gold theme */
-.app-shell[data-theme="dark"] {
-  color-scheme: dark;
-  background:
-    radial-gradient(circle at 22% 10%, rgba(212, 164, 50, 0.14), transparent 28%),
-    linear-gradient(135deg, #050606 0%, #090b0b 48%, #11100c 100%);
-  color: #f8f7ff;
-}
-
-.app-shell[data-theme="dark"] .app-content {
-  background:
-    radial-gradient(circle at 85% 8%, rgba(244, 200, 90, 0.12), transparent 24%),
-    linear-gradient(180deg, #070909 0%, #0d0f0f 100%) !important;
-}
-
-.app-shell[data-theme="dark"] .page-shell {
-  color: #f8f7ff !important;
-}
-
-.app-shell[data-theme="dark"] .page-shell h1,
-.app-shell[data-theme="dark"] .page-shell h2,
-.app-shell[data-theme="dark"] .page-shell h3,
-.app-shell[data-theme="dark"] .page-shell strong,
-.app-shell[data-theme="dark"] .page-shell label {
-  color: #f8f7ff !important;
-}
-
-.app-shell[data-theme="dark"] .page-shell p,
-.app-shell[data-theme="dark"] .page-shell span,
-.app-shell[data-theme="dark"] .page-shell td {
-  color: #c9c3b4;
-}
-
-.app-shell[data-theme="dark"] .page-shell [style*="background: white"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #fff"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #ffffff"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: rgb(255, 255, 255)"] {
-  background: rgba(11, 14, 14, 0.9) !important;
-  border-color: rgba(212, 164, 50, 0.24) !important;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32) !important;
-}
-
-.app-shell[data-theme="dark"] .page-shell [style*="background: #f5f3ee"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #f7f7f4"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #eef1f5"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #faf9f6"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #faf8f2"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #f0ede6"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #f8fafc"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #edf7f3"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #fef3c7"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #e0e7ff"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #fff8e1"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #e8f5e9"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #e3f2fd"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #fef2f2"],
-.app-shell[data-theme="dark"] .page-shell [style*="background: #ecfdf5"] {
-  background: rgba(20, 20, 17, 0.86) !important;
-  border-color: rgba(212, 164, 50, 0.24) !important;
-}
 
 .app-shell[data-theme="dark"] .page-shell [style*="background: #1a1a2e"],
 .app-shell[data-theme="dark"] .page-shell [style*="background: #1f2a36"] {
