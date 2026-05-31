@@ -6,6 +6,7 @@ import saleRoutes from "./routes/sales.js";
 import userRoutes from "./routes/users.js";
 import reportRoutes from "./routes/reports.js";
 import stockRoutes from "./routes/stock.js";
+import ingredientStockRoutes from "./routes/ingredientStock.js"; // Import ingredient stock routes
 import menuRoutes from "./routes/menu.js"; // Import menu routes
 import authRoutes from "./routes/auth.js"; // 1. Import your auth routes
 import { verifyToken, authorizeRoles } from "./middleware/authMiddleware.js"; // 2. Import middleware
@@ -31,6 +32,7 @@ app.use("/api/products", verifyToken, productRoutes);
 app.use("/api/sales", verifyToken, saleRoutes);
 app.use("/api/reports", verifyToken, authorizeRoles("sudo_admin", "admin"), reportRoutes);
 app.use("/api/stock", verifyToken, authorizeRoles("sudo_admin", "admin"), stockRoutes);
+app.use("/api/ingredient-stock", verifyToken, authorizeRoles("sudo_admin", "admin"), ingredientStockRoutes); // Protect ingredient stock routes
 app.use("/api/users", verifyToken, authorizeRoles("sudo_admin", "admin"), userRoutes);
 app.use("/api/menu", verifyToken, menuRoutes);
 app.listen(PORT, () => {
