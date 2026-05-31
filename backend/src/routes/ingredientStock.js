@@ -82,7 +82,6 @@ router.post("/ingredients", async (req, res) => {
     name,
     defaultUnit,
     minimumQuantity,
-    enableLowStockAlert,
     notes,
   } = req.body;
 
@@ -111,16 +110,14 @@ router.post("/ingredients", async (req, res) => {
         name,
         default_unit,
         minimum_quantity,
-        enable_low_stock_alert,
         notes
       )
-      VALUES (?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?)
       `,
       [
         name,
         defaultUnit || "kg",
         minimumQuantity || 0,
-        enableLowStockAlert ? 1 : 0,
         notes || null,
       ]
     );
@@ -334,7 +331,6 @@ router.put("/ingredients/:id", async (req, res) => {
     name,
     defaultUnit,
     minimumQuantity,
-    enableLowStockAlert,
     notes,
   } = req.body;
 
@@ -346,7 +342,6 @@ router.put("/ingredients/:id", async (req, res) => {
         name = ?,
         default_unit = ?,
         minimum_quantity = ?,
-        enable_low_stock_alert = ?,
         notes = ?
       WHERE id = ?
       `,
@@ -354,7 +349,6 @@ router.put("/ingredients/:id", async (req, res) => {
         name,
         defaultUnit,
         minimumQuantity || 0,
-        enableLowStockAlert ? 1 : 0,
         notes || null,
         id,
       ]

@@ -174,9 +174,9 @@ export default function IngredientStock() {
           setIngredients(Array.isArray(ingData) ? ingData : []);
           setHistory(Array.isArray(histData) ? histData : []);
         }
-      } catch {
-        if (isActive) setErrorMessage("Failed to load ingredient data.");
-      } finally {
+      } catch (err) {
+  if (isActive) setErrorMessage("Failed to load ingredient data: " + err.message);
+   } finally {
         if (isActive) { setLoading(false); setHistoryLoading(false); }
       }
     };
